@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Detail Buku - PustakaKita</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="home.html" class="logo"><i class="fas fa-book-open"></i> BooKoo</a
+      >
+      <div class="nav-links" id="navLinks">
+        <a href="home.html">Beranda</a>
+        <a href="products.html">Katalog Buku</a>
+        <a href="bestseller.html">Bestseller</a>
+        <a href="orders.html">Pesanan Saya</a>
+        <a href="contact.html">Hubungi Kami</a>
+        </div>
+        <div class="nav-icons">
+            <a href="#" onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i
+        ></a>
+            <a href="cart.html" class="icon-btn">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="nav-cart-count">0</span>
+            </a>
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 3rem">
+        <a href="javascript:history.back()" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
+
+        <div class="detail-container" id="detail-content">
+            <p style="text-align: center">Memuat data buku...</p>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        checkAuth();
+
+        // Variabel global untuk menyimpan data produk saat ini
+        let currentProduct = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const productId = parseInt(params.get('id'));
+
+            const products = JSON.parse(localStorage.getItem('products'));
+            currentProduct = products.find(p => p.id === productId);
+            const container = document.getElementById('detail-content');
+
+            if (currentProduct) {
+                // Tentukan warna status stok
+                let stockStatus = `<span style="color: green; font-weight:500;">Stok: ${currentProduct.stock}</span>`;
+                if (currentProduct.stock < 10) {
+                    stockStatus = `<span style="color: #d97706; font-weight:bold;">Sisa ${currentProduct.stock} produk!</span>`;
+                }
+                if (currentProduct.stock === 0) {
+                    stockStatus = `<span style="color: red; font-weight:bold;">Stok Habis</span>`;
+                }
+
+                container.innerHTML = `
+                    <div class="detail-left">
+                        <img src="${currentProduct.image}" alt="${currentProduct.name}" class="detail-img-large">
+                    </div>
+                    <div class="detail-right">
+                        <h1 class="detail-title">${currentProduct.name}</h1>
+                        <p class="detail-price">${formatRupiah(currentProduct.price)}</p>
+                        
+                        <div class="detail-desc">
+                            <h3>Deskripsi Buku</h3>
+                            <p>${currentProduct.desc}</p>
+                            <p>Stok tersedia dan siap dikirim. Jaminan buku original 100%.</p>
+                        </div>
+
+                        <div class="action-area">
+                            <div class="qty-wrapper">
+                                <label>Jumlah:</label>
+                                <div class="qty-box">
+                                    <button onclick="changeDetailQty(-1)">-</button>
+                                    <input type="number" id="detailQty" value="1" readonly>
+                                    <button onclick="changeDetailQty(1)">+</button>
+                                </div>
+                                <div style="margin-left: 15px; font-size: 0.9rem;">
+                                    ${stockStatus}
+                                </div>
+                            </div>
+                            
+                            <div class="btn-action-group">
+                                <button class="btn btn-outline" onclick="addFromDetail(${currentProduct.id})">
+                                    <i class="fas fa-cart-plus"></i> Keranjang
+                                </button>
+                                <button class="btn btn-buy" onclick="buyNow(${currentProduct.id})">
+                                    Beli Sekarang
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Jika stok 0, matikan tombol
+                if (currentProduct.stock === 0) {
+                    document.querySelector('.qty-box').style.opacity = '0.5';
+                    document.querySelector('.qty-box').style.pointerEvents = 'none';
+                    document.querySelectorAll('.btn-action-group button').forEach(btn => {
+                        btn.disabled = true;
+                        btn.style.background = '#ccc';
+                        btn.style.border = 'none';
+                        btn.innerText = 'Stok Habis';
+                    });
+                }
+            } else {
+                container.innerHTML = '<h2>Buku tidak ditemukan!</h2>';
+            }
+        });
+
+        // FUNGSI UBAH JUMLAH DENGAN BATASAN STOK
+        function changeDetailQty(change) {
+            const input = document.getElementById('detailQty');
+            let val = parseInt(input.value) + change;
+
+            // Batas Bawah: Minimal 1
+            if (val < 1) val = 1;
+
+            // Batas Atas: Maksimal Stok
+            if (val > currentProduct.stock) {
+                alert(`Maaf, stok hanya tersedia ${currentProduct.stock} buku.`);
+                val = currentProduct.stock;
+            }
+
+            input.value = val;
+        }
+
+        // Logic Keranjang (Sama seperti sebelumnya)
+        function addFromDetail(id) {
+            addToCartLogic(id);
+            alert('Berhasil masuk keranjang!');
+            updateCartCount();
+        }
+
+        function buyNow(id) {
+            addToCartLogic(id);
+            window.location.href = 'checkout.html';
+        }
+
+        function addToCartLogic(id) {
+            const qty = parseInt(document.getElementById('detailQty').value);
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const products = JSON.parse(localStorage.getItem('products'));
+            const product = products.find(p => p.id === id);
+            const existingItem = cart.find(item => item.id === id);
+
+            // Validasi Stok saat masuk keranjang
+            if (existingItem) {
+                if (existingItem.qty + qty > product.stock) {
+                    alert('Total barang di keranjang melebihi stok yang tersedia!');
+                    return;
+                }
+                existingItem.qty += qty;
+            } else {
+                cart.push({...product,
+                    qty: qty
+                });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+    </script>
+</body>
+
+</html>

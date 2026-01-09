@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Pesanan Masuk - Admin PustakaKita</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body style="background-color: #f3f4f6;">
+
+    <script>
+        if (!localStorage.getItem('admin_token')) {
+            alert('Akses Ditolak! Silakan login sebagai admin terlebih dahulu.');
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="admin-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-book-open"></i> BooKoo
+                <span style="font-size: 0.8rem; display:block; margin-top:5px; opacity:0.7;">Administrator</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="admin.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                <li><a href="admin-products.html"><i class="fas fa-book"></i> Kelola Produk</a></li>
+                <li><a href="admin-orders.html" class="active"><i class="fas fa-shopping-cart"></i> Pesanan Masuk</a></li>
+                <li>
+                    <a href="admin-messages.html">
+                        <i class="fas fa-envelope"></i> Kotak Masuk
+                    </a>
+                </li>
+                <li style="margin-top: auto;">
+                    <a href="#" onclick="adminLogout()" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <header class="admin-header">
+                <div style="display: flex; align-items: center;">
+                    <button class="admin-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2>Pesanan Masuk</h2>
+                </div>
+
+                <div style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                    Total: <b id="count-orders">0</b> Pesanan
+                </div>
+            </header>
+
+            <div class="recent-orders-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID & Tanggal</th>
+                            <th>Pelanggan</th>
+                            <th>Barang</th>
+                            <th>Total & Kurir</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="statusModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Update Status</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="statusForm">
+                    <input type="hidden" id="orderIdEdit">
+
+                    <div class="form-group">
+                        <label>ID Pesanan</label>
+                        <input type="text" id="displayId" class="form-control" readonly style="background:#eee;">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status Pesanan</label>
+                        <select id="statusSelect" class="form-control" onchange="toggleResiInput()">
+                            <option value="Belum Bayar">Belum Bayar</option>
+                            <option value="Diproses">Diproses</option>
+                            <option value="Dikirim">Dikirim (Input Resi)</option>
+                            <option value="Selesai">Selesai</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="resiGroup" style="display:none;">
+                        <label>Nomor Resi</label>
+                        <input type="text" id="resiInput" class="form-control" placeholder="Contoh: JP-88129922">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Simpan Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script>
+        // --- A. LOGIKA UTAMA ---
+        let orders = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOrders();
+        });
+
+        function loadOrders() {
+            orders = JSON.parse(localStorage.getItem('orders')) || [];
+            document.getElementById('count-orders').innerText = orders.length;
+
+            const tbody = document.getElementById('orders-table-body');
+
+            if (orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">Belum ada pesanan masuk.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            orders.forEach((order) => {
+                        // Warna Badge
+                        let badgeClass = 'badge-processing';
+                        if (order.status === 'Selesai') badgeClass = 'badge-success';
+                        if (order.status === 'Dikirim') badgeClass = 'badge-shipping';
+                        if (order.status === 'Belum Bayar') badgeClass = 'badge-pending';
+
+                        // Info Barang (Preview)
+                        const firstItem = order.items[0] ? order.items[0].name : 'Produk dihapus';
+                        const moreItems = order.items.length > 1 ? ` +${order.items.length - 1} lainnya` : '';
+
+                        // Link WA
+                        const waLink = `https://wa.me/628123456789?text=Halo%20kak,%20terkait%20pesanan%20${order.id}...`;
+
+                        html += `
+                    <tr>
+                        <td>
+                            <span style="font-weight:bold; color:var(--primary); font-size:0.85rem;">${order.id}</span><br>
+                            <small style="color:#666;">${order.date.split(',')[0]}</small>
+                        </td>
+                        <td>
+                            <strong>User Demo</strong><br>
+                            <a href="${waLink}" target="_blank" style="font-size:0.8rem; color:#25D366; text-decoration:none; font-weight:600;">
+                                <i class="fab fa-whatsapp"></i> Hubungi
+                            </a>
+                        </td>
+                        <td>
+                            ${firstItem} <small style="color:#666;">${moreItems}</small>
+                        </td>
+                        <td>
+                            ${formatRupiah(order.total_price)}<br>
+                            <small style="color:#666;">${order.courier}</small>
+                        </td>
+                        <td>
+                            <span class="status-badge ${badgeClass}">${order.status}</span>
+                            ${order.tracking_number ? `<br><small style="font-size:0.7rem; color:#000;">Resi: ${order.tracking_number}</small>` : ''}
+                        </td>
+                        <td>
+                            <button class="btn-action edit" onclick="openStatusModal('${order.id}')" title="Ubah Status">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action delete" onclick="deleteOrder('${order.id}')" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // --- B. LOGIKA MODAL UPDATE STATUS ---
+        const modal = document.getElementById('statusModal');
+
+        function openStatusModal(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+
+            document.getElementById('orderIdEdit').value = id;
+            document.getElementById('displayId').value = id;
+            document.getElementById('statusSelect').value = order.status;
+            document.getElementById('resiInput').value = order.tracking_number || ''; 
+            
+            toggleResiInput(); 
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+        
+        function toggleResiInput() {
+            const status = document.getElementById('statusSelect').value;
+            const resiGroup = document.getElementById('resiGroup');
+            resiGroup.style.display = (status === 'Dikirim') ? 'block' : 'none';
+        }
+
+        // Simpan Perubahan
+        document.getElementById('statusForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('orderIdEdit').value;
+            const newStatus = document.getElementById('statusSelect').value;
+            const newResi = document.getElementById('resiInput').value;
+
+            const index = orders.findIndex(o => o.id === id);
+            if(index !== -1) {
+                orders[index].status = newStatus;
+                if(newStatus === 'Dikirim') {
+                    orders[index].tracking_number = newResi;
+                }
+                localStorage.setItem('orders', JSON.stringify(orders));
+                alert(`Status pesanan berhasil diubah!`);
+                closeModal();
+                loadOrders(); 
+            }
+        });
+
+        // Hapus Pesanan
+        function deleteOrder(id) {
+            if(confirm('Yakin ingin menghapus riwayat pesanan ini?')) {
+                orders = orders.filter(o => o.id !== id);
+                localStorage.setItem('orders', JSON.stringify(orders));
+                loadOrders();
+            }
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) closeModal();
+        }
+
+        // --- C. FUNGSI TAMBAHAN (RESPONSIVE & LOGOUT) ---
+        
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        function adminLogout() {
+            if(confirm('Yakin ingin keluar dari Admin?')) {
+                localStorage.removeItem('admin_token');
+                window.location.href = 'admin-login.html';
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Pesanan Saya - PustakaKita</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="home.html" class="logo"><i class="fas fa-book-open"></i> BooKoo</a
+      >
+      <div class="nav-links" id="navLinks">
+        <a href="home.html">Beranda</a>
+        <a href="products.html">Katalog Buku</a>
+        <a href="bestseller.html">Bestseller</a>
+        <a href="orders.html" class="active-link">Pesanan Saya</a>
+        <a href="contact.html">Hubungi Kami</a>
+        </div>
+        <div class="nav-icons">
+            <a href="#" onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i
+        ></a>
+            <a href="cart.html" class="icon-btn">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="nav-cart-count">0</span>
+            </a>
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 style="margin-bottom: 1.5rem; font-family: 'Poppins', serif">
+            Daftar Transaksi
+        </h2>
+
+        <div class="status-tabs">
+            <div class="tab active" onclick="filterOrders('Semua', this)">
+                Semua
+            </div>
+            <div class="tab" onclick="filterOrders('Belum Bayar', this)">
+                Belum Bayar
+            </div>
+            <div class="tab" onclick="filterOrders('Diproses', this)">Diproses</div>
+            <div class="tab" onclick="filterOrders('Dikirim', this)">Dikirim</div>
+            <div class="tab" onclick="filterOrders('Selesai', this)">Selesai</div>
+        </div>
+
+        <div id="orders-container">
+            <p style="text-align: center; margin-top: 3rem">
+                Memuat riwayat pesanan...
+            </p>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        checkAuth();
+
+        // Variabel global untuk menyimpan semua data pesanan
+        let allOrders = [];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // 1. Ambil data dari LocalStorage
+            allOrders = JSON.parse(localStorage.getItem("orders")) || [];
+
+            // 2. Tampilkan Semua Pesanan saat pertama load
+            renderOrderList(allOrders);
+        });
+
+        // FUNGSI UTAMA: Render (Menampilkan) Daftar
+        function renderOrderList(ordersData) {
+            const container = document.getElementById("orders-container");
+
+            // Cek jika kosong
+            if (ordersData.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; margin-top:4rem; margin-bottom:4rem;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png" width="80" style="opacity:0.3; margin-bottom:1rem;">
+                        <h4 style="color:#666;">Tidak ada pesanan di status ini</h4>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            ordersData.forEach((order) => {
+                // Tentukan warna badge
+                let badgeClass = "badge-processing"; // Default oranye
+                if (order.status === "Selesai") badgeClass = "badge-success"; // Hijau
+                if (order.status === "Dikirim") badgeClass = "badge-shipping"; // Biru
+                if (order.status === "Belum Bayar") badgeClass = "badge-pending"; // Abu/Kuning
+
+                // Render item barang (preview max 2 barang)
+                let itemsHtml = "";
+                order.items.forEach((item) => {
+                    itemsHtml += `
+                        <div class="order-mini-item">
+                            <img src="${item.image}" alt="${item.name}">
+                            <div class="mini-info">
+                                <strong>${item.name}</strong>
+                                <small>${item.qty} x ${formatRupiah(
+              item.price
+            )}</small>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-meta">
+                                <i class="fas fa-shopping-bag"></i> 
+                                <strong>Belanja</strong> • ${order.date}
+                                <span class="order-id">${order.id}</span>
+                            </div>
+                            <span class="status-badge ${badgeClass}">${
+            order.status
+          }</span>
+                        </div>
+
+                        <div class="order-body">
+                            ${itemsHtml}
+                        </div>
+
+                        <div class="order-footer">
+                            <div class="total-info">
+                                <small>Total Belanja</small>
+                                <span class="price">${formatRupiah(
+                                  order.total_price
+                                )}</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-outline" style="font-size:0.9rem; padding:8px 15px;" 
+                                    onclick="window.location.href='order-detail.html?id=${
+                                      order.id
+                                    }'">
+                                    Lihat Detail
+                                </button>
+                                
+                                <button class="btn btn-primary" style="font-size:0.9rem; padding:8px 15px;" onclick="window.location.href='products.html'">
+                                    Beli Lagi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // FUNGSI FILTER: Dipanggil saat Tab diklik
+        function filterOrders(status, element) {
+            // 1. Update Tampilan Tab (Pindah garis bawah aktif)
+            // Hapus class 'active' dari semua tab
+            document
+                .querySelectorAll(".tab")
+                .forEach((t) => t.classList.remove("active"));
+            // Tambah class 'active' ke tab yang diklik
+            element.classList.add("active");
+
+            // 2. Filter Data
+            let filteredOrders = [];
+
+            if (status === "Semua") {
+                filteredOrders = allOrders;
+            } else {
+                // Ambil hanya yang statusnya sama dengan tab yang dipilih
+                filteredOrders = allOrders.filter((order) => order.status === status);
+            }
+
+            // 3. Tampilkan Data Hasil Filter
+            renderOrderList(filteredOrders);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Checkout - PustakaKita</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="home.html" class="logo"><i class="fas fa-book-open"></i> BooKoo</a
+      >
+      <div style="font-weight: 600; color: #555">
+        Keamanan Pembayaran Terjamin
+        <i class="fas fa-lock" style="color: green"></i>
+      </div>
+    </nav>
+
+    <div class="container">
+        <div style="margin-top: 2rem;">
+            <a href="cart.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Kembali
+            </a>
+        </div>
+        <h2 style="margin-bottom: 1.5rem; font-family: 'Poppins', serif">
+            Checkout Pesanan Anda
+        </h2>
+
+        <form id="checkoutForm">
+            <form id="checkoutForm">
+                <div class="checkout-layout">
+                    <div class="checkout-left">
+                        <div class="checkout-card">
+                            <h3 class="card-title">
+                                <i class="fas fa-map-marker-alt"></i> Alamat Pengiriman
+                            </h3>
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label>Nama Lengkap</label>
+                                    <input type="text" class="form-control" required placeholder="Nama Anda" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Nomor WhatsApp</label>
+                                <input type="tel" class="form-control" required placeholder="0812xxxx" />
+                            </div>
+                            <div class="form-group">
+                                <label>Alamat Lengkap</label>
+                                <textarea class="form-control" rows="3" required placeholder="Nama Jalan, No. Rumah, RT/RW, Kelurahan..."></textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label>Kota / Kabupaten</label>
+                                    <input type="text" class="form-control" required />
+                                </div>
+                                <div class="form-group half">
+                                    <label>Kode Pos</label>
+                                    <input type="number" class="form-control" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checkout-card">
+                            <h3 class="card-title">
+                                <i class="fas fa-truck"></i> Pengiriman
+                            </h3>
+                            <div class="form-group">
+                                <label>Pilih Kurir</label>
+                                <select id="courierSelect" class="form-control" onchange="calculateTotal()">
+                  <option value="0">-- Pilih Kurir --</option>
+                  <option value="15000">JNE Reguler (Rp 15.000)</option>
+                  <option value="25000">JNE YES / Kilat (Rp 25.000)</option>
+                  <option value="12000">SiCepat (Rp 12.000)</option>
+                  <option value="35000">GoSend Instant (Rp 35.000)</option>
+                </select>
+                            </div>
+                        </div>
+
+                        <div class="checkout-card">
+                            <h3 class="card-title">
+                                <i class="fas fa-credit-card"></i> Metode Pembayaran
+                            </h3>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                  <input type="radio" name="payment" value="transfer" checked />
+                  <span>Transfer Bank (BCA/Mandiri)</span>
+                </label>
+                                <label class="payment-option">
+                  <input type="radio" name="payment" value="cod" />
+                  <span>Bayar di Tempat (COD)</span>
+                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-right">
+                        <div class="order-summary-card">
+                            <h3>Ringkasan Pesanan</h3>
+
+                            <div id="order-items-list" class="order-items"></div>
+
+                            <div class="summary-details">
+                                <div class="summary-row">
+                                    <span>Subtotal</span>
+                                    <span id="summary-subtotal">Rp 0</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Ongkos Kirim</span>
+                                    <span id="summary-shipping">Rp 0</span>
+                                </div>
+                                <div class="summary-row total">
+                                    <span>Total Pembayaran</span>
+                                    <span id="summary-total">Rp 0</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block btn-lg">
+                Buat Pesanan
+              </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            </div>
+            <script src="js/data.js"></script>
+            <script src="js/app.js"></script>
+            <script>
+                checkAuth();
+
+                let cartTotal = 0;
+
+                // 1. Saat halaman dimuat
+                document.addEventListener('DOMContentLoaded', () => {
+                    renderCheckoutItems(); // Tampilkan barang
+                });
+
+                // 2. Fungsi Menampilkan Barang (Bisa dipanggil ulang saat qty berubah)
+                function renderCheckoutItems() {
+                    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                    const itemList = document.getElementById('order-items-list');
+
+                    // Jika kosong setelah dihapus semua
+                    if (cart.length === 0) {
+                        alert('Keranjang kosong! Mengalihkan ke halaman utama...');
+                        window.location.href = 'home.html';
+                        return;
+                    }
+
+                    let html = '';
+                    cartTotal = 0;
+
+                    cart.forEach((item, index) => {
+                        const sub = item.price * item.qty;
+                        cartTotal += sub;
+
+                        html += `
+                    <div class="order-item">
+                        <div class="item-img-wrapper">
+                            <img src="${item.image}" alt="${item.name}">
+                        </div>
+                        
+                        <div class="item-details" style="flex: 1;">
+                            <h4>${item.name}</h4>
+                            <p style="color:var(--primary); font-weight:bold;">${formatRupiah(item.price)}</p>
+                            
+                            <div class="checkout-item-actions">
+                                <div class="checkout-qty-box">
+                                    <button type="button" onclick="updateCheckoutQty(${index}, -1)">-</button>
+                                    <span>${item.qty}</span>
+                                    <button type="button" onclick="updateCheckoutQty(${index}, 1)">+</button>
+                                </div>
+                                
+                                <button type="button" class="btn-remove-small" onclick="removeCheckoutItem(${index})" title="Hapus Barang">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="item-subtotal" style="font-size:0.85rem; color:#666;">
+                            ${formatRupiah(sub)}
+                        </div>
+                    </div>
+                `;
+                    });
+
+                    itemList.innerHTML = html;
+                    calculateTotal(); // Hitung ulang total harga + ongkir
+                }
+
+                // 3. Fungsi Ubah Jumlah (+ atau -)
+                function updateCheckoutQty(index, change) {
+                    let cart = JSON.parse(localStorage.getItem('cart'));
+
+                    // Update qty
+                    cart[index].qty += change;
+
+                    // Minimal 1. Jika user ingin hapus, gunakan tombol sampah.
+                    if (cart[index].qty < 1) {
+                        cart[index].qty = 1;
+                    }
+
+                    // Simpan & Render Ulang
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    renderCheckoutItems();
+                    updateCartCount(); // Update badge di navbar (dari js/app.js)
+                }
+
+                // 4. Fungsi Hapus Item dari Checkout
+                function removeCheckoutItem(index) {
+                    if (confirm('Hapus buku ini dari pesanan?')) {
+                        let cart = JSON.parse(localStorage.getItem('cart'));
+                        cart.splice(index, 1);
+
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        renderCheckoutItems();
+                        updateCartCount();
+                    }
+                }
+
+                // 5. Hitung Total Akhir (Barang + Ongkir)
+                function calculateTotal() {
+                    const shippingCost = parseInt(document.getElementById('courierSelect').value);
+
+                    document.getElementById('summary-subtotal').innerText = formatRupiah(cartTotal);
+                    document.getElementById('summary-shipping').innerText = shippingCost > 0 ? formatRupiah(shippingCost) : 'Rp -';
+
+                    const grandTotal = cartTotal + shippingCost;
+                    document.getElementById('summary-total').innerText = formatRupiah(grandTotal);
+                }
+
+                // 6. Submit Pesanan
+                // checkout.html (Bagian Script Submit)
+
+                document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    // 1. Validasi Kurir
+                    const shippingCost = parseInt(document.getElementById('courierSelect').value);
+                    if (shippingCost === 0 || isNaN(shippingCost)) {
+                        alert('Silakan pilih kurir pengiriman terlebih dahulu.');
+                        return;
+                    }
+
+                    // 2. Efek Loading
+                    const btn = document.querySelector('button[type="submit"]');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+                    btn.disabled = true;
+
+                    // 3. Ambil Data Keranjang & Hitung Total
+                    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                    const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+                    const grandTotal = cartTotal + shippingCost;
+
+                    // 4. Buat Object "Pesanan Baru"
+                    const newOrder = {
+                        id: 'ORD-' + Date.now(), // ID Unik berdasarkan waktu
+                        date: new Date().toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }),
+                        items: cart,
+                        shipping_cost: shippingCost,
+                        total_price: grandTotal,
+                        status: 'Diproses', // Status awal
+                        courier: document.getElementById('courierSelect').options[document.getElementById('courierSelect').selectedIndex].text
+                    };
+
+                    // 5. Simpan ke LocalStorage (Array 'orders')
+                    const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                    orders.unshift(newOrder); // Tambahkan ke paling atas (terbaru)
+                    localStorage.setItem('orders', JSON.stringify(orders));
+
+                    // 6. Redirect setelah jeda
+                    setTimeout(() => {
+                        localStorage.removeItem('cart'); // Kosongkan keranjang
+                        alert('Pesanan Berhasil! Anda akan diarahkan ke halaman status pesanan.');
+                        window.location.href = 'orders.html'; // Pindah ke halaman pesanan
+                    }, 1500);
+                });
+            </script>
+            </script>
+</body>
+
+</html>

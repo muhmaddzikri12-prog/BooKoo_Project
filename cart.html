@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Keranjang - PustakaKita</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="home.html" class="logo"><i class="fas fa-book-open"></i> BooKoo</a
+      >
+      <div class="nav-links" id="navLinks">
+        <a href="home.html">Beranda</a>
+        <a href="products.html">Katalog Buku</a>
+        <a href="orders.html">Pesanan Saya</a>
+        <a href="contact.html">Hubungi Kami</a>
+        </div>
+        <div class="nav-icons">
+            <a href="#" onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i
+        ></a>
+            <a href="cart.html" class="icon-btn active-link">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="nav-cart-count">0</span>
+            </a>
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 style="margin-bottom: 1.5rem; font-family: 'Poppins', serif">
+            Keranjang Belanja
+        </h2>
+
+        <div id="empty-state" style="display: none; text-align: center; padding: 4rem 1rem">
+            <img src="https://cdn-icons-png.flaticon.com/512/11329/11329060.png" width="120" style="opacity: 0.5; margin-bottom: 1.5rem" />
+            <h3>Keranjangmu masih kosong</h3>
+            <p style="color: #666; margin-bottom: 2rem">
+                Sepertinya kamu belum menambahkan buku apapun.
+            </p>
+            <a href="products.html" class="btn btn-primary">Mulai Belanja</a>
+        </div>
+
+        <div class="cart-layout" id="cart-content">
+            <div class="cart-items-list" id="cart-list-container"></div>
+
+            <div class="cart-sidebar">
+                <div class="summary-box">
+                    <h3>Ringkasan Belanja</h3>
+                    <div class="summary-row">
+                        <span>Total Harga Barang</span>
+                        <span id="cart-subtotal">Rp 0</span>
+                    </div>
+                    <hr style="margin: 1rem 0; border: 0; border-top: 1px solid #eee" />
+                    <div class="summary-row total">
+                        <span>Total Harga</span>
+                        <span id="cart-total-final" style="color: var(--primary)">Rp 0</span
+              >
+            </div>
+
+            <a
+              href="checkout.html"
+              class="btn btn-primary btn-block btn-lg"
+              style="margin-top: 1.5rem"
+            >
+              Checkout (<span id="cart-total-items">0</span>)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/data.js"></script>
+        <script src="js/app.js"></script>
+        <script>
+            checkAuth();
+            // Render Cart dipanggil dari app.js, tapi kita panggil sekali lagi saat load untuk memastikan
+            document.addEventListener("DOMContentLoaded", () => {
+                renderCartModern();
+            });
+        </script>
+</body>
+
+</html>

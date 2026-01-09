@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Dashboard Admin - PustakaKita</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body style="background-color: #f3f4f6;">
+
+    <script>
+        if (!localStorage.getItem('admin_token')) {
+            alert('Akses Ditolak! Silakan login admin terlebih dahulu.');
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="admin-container">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-book-open"></i> BooKoo
+                <span style="font-size: 0.8rem; display:block; margin-top:5px; opacity:0.7;">Administrator</span>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="admin.html" class="active">
+                        <i class="fas fa-th-large"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="admin-products.html">
+                        <i class="fas fa-book"></i> Kelola Produk
+                    </a>
+                </li>
+                <li>
+                    <a href="admin-orders.html">
+                        <i class="fas fa-shopping-cart"></i> Pesanan Masuk
+                    </a>
+                </li>
+                <li>
+                    <a href="admin-messages.html">
+                        <i class="fas fa-envelope"></i> Kotak Masuk
+                    </a>
+                </li>
+                <li style="margin-top: auto;">
+                    <a href="#" onclick="adminLogout()" style="color: #ef4444;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <header class="admin-header">
+                <div style="display: flex; align-items: center;">
+                    <button class="admin-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2>Overview Toko</h2>
+                </div>
+
+                <div class="admin-user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="Admin">
+                    <span>Halo, Admin</span>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon income"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-info">
+                        <p>Total Pendapatan</p>
+                        <h3 id="total-revenue">Rp 0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon orders"><i class="fas fa-shopping-bag"></i></div>
+                    <div class="stat-info">
+                        <p>Total Pesanan</p>
+                        <h3 id="total-orders">0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon products"><i class="fas fa-book"></i></div>
+                    <div class="stat-info">
+                        <p>Total Buku</p>
+                        <h3 id="total-products">0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon users"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <p>Pelanggan</p>
+                        <h3>1</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-orders-container">
+                <div class="section-header">
+                    <h3>Pesanan Terbaru</h3>
+                    <a href="admin-orders.html" class="btn-text">Lihat Semua</a>
+                </div>
+
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID Pesanan</th>
+                            <th>Tanggal</th>
+                            <th>Pelanggan</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-orders-table">
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // 1. Ambil Data dari LocalStorage
+            const orders = JSON.parse(localStorage.getItem('orders')) || [];
+            const products = JSON.parse(localStorage.getItem('products')) || [];
+
+            // 2. Hitung Statistik
+            // a. Hitung Total Uang (Reduce)
+            const revenue = orders.reduce((acc, order) => acc + order.total_price, 0);
+            document.getElementById('total-revenue').innerText = formatRupiah(revenue);
+
+            // b. Hitung Jumlah Pesanan
+            document.getElementById('total-orders').innerText = orders.length;
+
+            // c. Hitung Jumlah Produk
+            document.getElementById('total-products').innerText = products.length;
+
+            // 3. Tampilkan 5 Pesanan Terakhir di Tabel
+            const tableBody = document.getElementById('recent-orders-table');
+            const recentOrders = orders.slice(0, 5); // Ambil 5 data pertama saja
+
+            if (recentOrders.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 1.5rem;">Belum ada pesanan masuk.</td></tr>`;
+            } else {
+                let html = '';
+                recentOrders.forEach(order => {
+                    // Tentukan Warna Badge
+                    let badgeClass = 'badge-processing';
+                    if (order.status === 'Selesai') badgeClass = 'badge-success';
+                    if (order.status === 'Dikirim') badgeClass = 'badge-shipping';
+                    if (order.status === 'Belum Bayar') badgeClass = 'badge-pending';
+
+                    html += `
+                        <tr>
+                            <td><span style="font-weight:bold; color:var(--primary);">#${order.id.substr(0, 8)}...</span></td>
+                            <td>${order.date.split(',')[0]}</td>
+                            <td>User Demo</td>
+                            <td>${formatRupiah(order.total_price)}</td>
+                            <td><span class="status-badge ${badgeClass}" style="font-size:0.75rem;">${order.status}</span></td>
+                        </tr>
+                    `;
+                });
+                tableBody.innerHTML = html;
+            }
+        });
+
+        // --- FUNGSI RESPONSIF (MOBILE) ---
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        // --- FUNGSI LOGOUT ---
+        function adminLogout() {
+            if (confirm('Yakin ingin keluar dari Admin?')) {
+                localStorage.removeItem('admin_token');
+                window.location.href = 'admin-login.html';
+            }
+        }
+
+        // Helper Format Rupiah (Jaga-jaga jika js/data.js error)
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(angka);
+        }
+    </script>
+</body>
+
+</html>

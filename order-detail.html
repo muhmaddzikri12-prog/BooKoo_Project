@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Detail Pesanan - PustakaKita</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="home.html" class="logo"><i class="fas fa-book-open"></i> BooKoo</a>
+        <div class="nav-links">
+            <a href="orders.html">Kembali ke Daftar Pesanan</a>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 900px;">
+        <div style="margin-top: 2rem; margin-bottom: 1.5rem;">
+            <a href="orders.html" class="btn-back"><i class="fas fa-arrow-left"></i> Kembali</a>
+        </div>
+
+        <div id="detail-loading" style="text-align:center;">Memuat data...</div>
+
+        <div id="order-detail-content" style="display:none;">
+
+            <div class="detail-card">
+                <div class="order-id-header">
+                    <div>
+                        <h3 style="margin-bottom:5px;">Detail Pesanan</h3>
+                        <p style="color:#666; font-size:0.9rem;">ID Pesanan: <span id="disp-id" style="color:var(--primary); font-weight:bold;"></span></p>
+                    </div>
+                    <div id="disp-date" style="color:#888; font-size:0.9rem;"></div>
+                </div>
+
+                <div class="track-timeline">
+                    <div class="track-step active">
+                        <div class="icon"><i class="fas fa-clipboard-check"></i></div>
+                        <p>Dipesan</p>
+                    </div>
+                    <div class="track-step active">
+                        <div class="icon"><i class="fas fa-box-open"></i></div>
+                        <p>Diproses</p>
+                    </div>
+                    <div class="track-step" id="step-shipping">
+                        <div class="icon"><i class="fas fa-shipping-fast"></i></div>
+                        <p>Dikirim</p>
+                    </div>
+                    <div class="track-step" id="step-done">
+                        <div class="icon"><i class="fas fa-home"></i></div>
+                        <p>Selesai</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <h4><i class="fas fa-map-marker-alt" style="color:var(--primary)"></i> Info Pengiriman</h4>
+                    <p style="margin-top:10px; font-weight:bold;">User Demo</p>
+                    <p style="color:#555; font-size:0.9rem;">08123456789</p>
+                    <p style="color:#555; font-size:0.9rem; margin-top:5px;">
+                        Jl. Pustaka Ilmu No. 1, Jakarta Selatan, DKI Jakarta.
+                    </p>
+                    <hr style="margin: 10px 0; border:0; border-top:1px solid #eee;">
+                    <p style="font-size:0.9rem;"><strong>Kurir:</strong> <span id="disp-courier"></span></p>
+                    <p style="font-size:0.9rem;"><strong>Resi:</strong> <span style="color:var(--primary);">JP-88291029</span></p>
+                </div>
+
+                <div class="detail-card">
+                    <h4><i class="fas fa-credit-card" style="color:var(--primary)"></i> Info Pembayaran</h4>
+                    <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                        <span>Metode</span>
+                        <strong>Transfer Bank</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                        <span>Status</span>
+                        <span class="badge-success">Lunas</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h4>Rincian Produk</h4>
+                <div id="product-list-container"></div>
+
+                <div class="summary-details" style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+                    <div class="summary-row">
+                        <span>Total Harga Barang</span>
+                        <span id="disp-subtotal"></span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Ongkos Kirim</span>
+                        <span id="disp-shipping"></span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total Belanja</span>
+                        <span id="disp-total"></span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-wa-help" class="btn btn-outline btn-block" style="margin-bottom:3rem;">
+                <i class="fas fa-headset"></i> Hubungi Bantuan / Komplain
+            </button>
+
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        checkAuth();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Ambil ID dari URL
+            const params = new URLSearchParams(window.location.search);
+            const orderId = params.get('id');
+
+            // 2. Cari Data Order
+            const orders = JSON.parse(localStorage.getItem('orders')) || [];
+            const order = orders.find(o => o.id === orderId);
+
+            if (!order) {
+                document.getElementById('detail-loading').innerHTML = '<h3>Pesanan tidak ditemukan</h3><a href="orders.html">Kembali</a>';
+                return;
+            }
+
+            // 3. Tampilkan Konten
+            document.getElementById('detail-loading').style.display = 'none';
+            document.getElementById('order-detail-content').style.display = 'block';
+
+            // Isi Data Header
+            document.getElementById('disp-id').innerText = order.id;
+            document.getElementById('disp-date').innerText = order.date;
+            document.getElementById('disp-courier').innerText = order.courier;
+
+            // Logic Timeline Sederhana
+            if (order.status === 'Dikirim' || order.status === 'Selesai') {
+                document.getElementById('step-shipping').classList.add('active');
+            }
+            if (order.status === 'Selesai') {
+                document.getElementById('step-done').classList.add('active');
+            }
+
+            // Isi List Produk
+            let htmlItems = '';
+            let subtotal = 0;
+            order.items.forEach(item => {
+                subtotal += item.price * item.qty;
+                htmlItems += `
+                    <div class="order-mini-item" style="padding:10px 0; border-bottom:1px solid #f9f9f9;">
+                        <img src="${item.image}" alt="${item.name}">
+                        <div class="mini-info" style="flex:1;">
+                            <strong>${item.name}</strong>
+                            <small>${item.qty} barang x ${formatRupiah(item.price)}</small>
+                        </div>
+                        <div style="font-weight:bold;">
+                            ${formatRupiah(item.price * item.qty)}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('product-list-container').innerHTML = htmlItems;
+
+            // Isi Total
+            document.getElementById('disp-subtotal').innerText = formatRupiah(subtotal);
+            document.getElementById('disp-shipping').innerText = formatRupiah(order.shipping_cost);
+            document.getElementById('disp-total').innerText = formatRupiah(order.total_price);
+
+            // --- LOGIKA WHATSAPP OTOMATIS (Tombol Lama) ---
+            const btnWa = document.getElementById('btn-wa-help');
+
+            // Nomer Tujuan
+            const waNumber = "6289605083080";
+
+            // Pesan Otomatis
+            const firstItemName = order.items[0].name;
+            const message = `Halo Admin BooKoo, saya butuh bantuan terkait pesanan saya.%0A%0AID Pesanan: *${order.id}*%0ATotal: ${formatRupiah(order.total_price)}%0AItem: ${firstItemName} (dan lainnya)%0A%0AKendala yang saya alami: ...`;
+
+            // Aksi Klik
+            btnWa.onclick = function() {
+                window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
+            };
+        });
+    </script>
+</body>
+
+</html>

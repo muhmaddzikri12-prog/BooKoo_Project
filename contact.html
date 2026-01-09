@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Hubungi Kami - PustakaKita</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- CSS MODERN KHUSUS HALAMAN INI --- */
+        /* 1. HERO SECTION GRADIENT */
+        
+        .contact-hero {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #172554 100%);
+            color: white;
+            padding: 6rem 2rem 10rem 2rem;
+            /* Padding bawah besar untuk efek floating */
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Hiasan Latar Belakang (Lingkaran) */
+        
+        .hero-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 0;
+        }
+        
+        .hc-1 {
+            width: 300px;
+            height: 300px;
+            top: -50px;
+            left: -50px;
+        }
+        
+        .hc-2 {
+            width: 200px;
+            height: 200px;
+            bottom: 50px;
+            right: 10%;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        /* 2. FLOATING CONTAINER */
+        
+        .floating-container {
+            max-width: 1100px;
+            margin: -6rem auto 4rem auto;
+            /* Menarik ke atas (-6rem) */
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .contact-wrapper {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        /* 3. KOLOM KIRI: FORMULIR */
+        
+        .contact-form-area {
+            flex: 1.5;
+            padding: 3rem;
+        }
+        
+        .modern-form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .modern-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.9rem;
+        }
+        
+        .modern-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e2e8f0;
+            /* Border halus */
+            border-radius: 10px;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+        
+        .modern-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            /* Efek Ring saat diklik */
+        }
+        /* 4. KOLOM KANAN: INFO (Warna Gelap) */
+        
+        .contact-info-area {
+            flex: 1;
+            background: #f1f5f9;
+            /* Abu-abu sangat muda */
+            padding: 3rem;
+            border-left: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-card-item {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s;
+        }
+        
+        .info-card-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+        
+        .icon-box {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        /* Peta Modern */
+        
+        .map-frame {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-top: auto;
+            /* Dorong ke bawah */
+            border: 4px solid white;
+        }
+        /* RESPONSIF */
+        
+        @media (max-width: 850px) {
+            .contact-wrapper {
+                flex-direction: column;
+            }
+            .contact-info-area {
+                border-left: none;
+                border-top: 1px solid #e2e8f0;
+            }
+            .contact-form-area {
+                padding: 2rem;
+            }
+            .contact-info-area {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="home.html" class="logo"><i class="fas fa-book-open"></i> BooKoo</a>
+        <div class="nav-links" id="navLinks">
+            <a href="home.html">Beranda</a>
+            <a href="products.html">Katalog Buku</a>
+            <a href="bestseller.html">Bestseller</a>
+            <a href="orders.html">Pesanan Saya</a>
+            <a href="contact.html" class="active-link">Hubungi Kami</a>
+        </div>
+        <div class="nav-icons">
+            <a href="#" onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></a>
+            <a href="cart.html" class="icon-btn">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="nav-cart-count">0</span>
+            </a>
+            <div class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+        </div>
+    </nav>
+
+    <div class="contact-hero">
+        <div class="hero-circle hc-1"></div>
+        <div class="hero-circle hc-2"></div>
+
+        <div class="hero-content">
+            <h1 style="font-family: 'Poppins', serif; font-size: 3rem; margin-bottom: 10px;">
+                BooKoo Siap Membantu
+            </h1>
+            <p style="opacity: 0.9; max-width: 600px; margin: 0 auto; font-size: 1.1rem; line-height: 1.6;">
+                Punya pertanyaan tentang buku, kendala pesanan, atau sekadar ingin memberikan saran? Isi formulir di bawah ini dan kami akan segera menghubungi Anda.
+            </p>
+        </div>
+    </div>
+
+    <div class="floating-container">
+        <div class="contact-wrapper">
+
+            <div class="contact-form-area">
+                <h3 style="margin-bottom: 2rem; font-family: 'Poppins', serif; font-size: 1.8rem; color: #1e293b;">
+                    <i class="far fa-envelope-open" style="color:var(--primary); margin-right:10px;"></i> Kirim Pesan
+                </h3>
+
+                <form id="contactForm">
+                    <div class="form-row" style="display: flex; gap: 20px;">
+                        <div class="modern-form-group" style="flex:1;">
+                            <label class="modern-label">Nama Lengkap</label>
+                            <input type="text" id="cName" class="modern-input" placeholder="Contoh: Budi Santoso" required>
+                        </div>
+                        <div class="modern-form-group" style="flex:1;">
+                            <label class="modern-label">Nomor WhatsApp</label>
+                            <input type="text" id="cPhone" class="modern-input" placeholder="0812..." required>
+                        </div>
+                    </div>
+
+                    <div class="modern-form-group">
+                        <label class="modern-label">Alamat Email</label>
+                        <input type="email" id="cEmail" class="modern-input" placeholder="email@domain.com" required>
+                    </div>
+
+                    <div class="modern-form-group">
+                        <label class="modern-label">Topik Bantuan</label>
+                        <select id="cSubject" class="modern-input">
+                            <option>Kendala Pesanan</option>
+                            <option>Request Buku Baru</option>
+                            <option>Kerjasama / Partnership</option>
+                            <option>Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div class="modern-form-group">
+                        <label class="modern-label">Isi Pesan</label>
+                        <textarea id="cMessage" class="modern-input" rows="5" placeholder="Jelaskan detail yang ingin Anda sampaikan..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="padding: 14px 30px; border-radius: 10px; width: 100%; font-size: 1rem; font-weight: bold; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);">
+                        <i class="fas fa-paper-plane"></i> Kirim Pesan Sekarang
+                    </button>
+                </form>
+            </div>
+
+            <div class="contact-info-area">
+                <h4 style="margin-bottom: 1.5rem; color: #64748b; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px;">Info Kontak Langsung</h4>
+
+                <div class="info-card-item">
+                    <div class="icon-box"><i class="fab fa-whatsapp"></i></div>
+                    <div>
+                        <strong style="display:block; color:#334155;">WhatsApp Admin</strong>
+                        <a href="https://wa.me/6289605083080" target="_blank" style="color:var(--primary); text-decoration:none; font-weight:600;">
+                            0896-0508-3080
+                        </a>
+                    </div>
+                </div>
+
+                <div class="info-card-item">
+                    <div class="icon-box"><i class="fas fa-envelope"></i></div>
+                    <div>
+                        <strong style="display:block; color:#334155;">Email Dukungan</strong>
+                        <span style="color:#64748b;">support@BooKoo.com</span>
+                    </div>
+                </div>
+
+                <div class="info-card-item">
+                    <div class="icon-box"><i class="fas fa-map-marked-alt"></i></div>
+                    <div>
+                        <strong style="display:block; color:#334155;">Lokasi Toko</strong>
+                        <span style="color:#64748b; font-size:0.9rem;">Jl. Pustaka Ilmu No.1, Jakarta Selatan.</span>
+                    </div>
+                </div>
+
+                <div class="map-frame">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.2999605553643!2d106.80166257586618!3d-6.224122960961814!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f14d8e3b7b95%3A0xc66579294e339c94!2sPerpustakaan%20Nasional%20Republik%20Indonesia!5e0!3m2!1sid!2sid!4v1689562000000!5m2!1sid!2sid"
+                        width="100%" height="200" style="border:0;" allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        checkAuth();
+
+        // --- UPDATE LOGIKA PENYIMPANAN PESAN ---
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 1. Ambil Data Input
+            const name = document.getElementById('cName').value;
+            const phone = document.getElementById('cPhone').value;
+            const email = document.getElementById('cEmail').value;
+            const subject = document.getElementById('cSubject').value;
+            const message = document.getElementById('cMessage').value;
+
+            // 2. Buat Object Pesan Baru
+            const newMessage = {
+                id: Date.now(), // ID unik berdasarkan waktu
+                date: new Date().toLocaleDateString('id-ID') + ' ' + new Date().toLocaleTimeString('id-ID'), // Format Tanggal
+                name: name,
+                phone: phone,
+                email: email,
+                subject: subject,
+                message: message,
+                isRead: false // Status belum dibaca
+            };
+
+            // 3. Simpan ke LocalStorage
+            // Ambil data lama dulu (jika ada), kalau tidak ada buat array kosong
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+            messages.unshift(newMessage); // Masukkan ke urutan paling atas (terbaru)
+            localStorage.setItem('messages', JSON.stringify(messages));
+
+            // 4. Efek Loading UI
+            const btn = document.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sedang Mengirim...';
+            btn.style.opacity = '0.7';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                alert(`Pesan terkirim! Terima kasih Kak ${name}.`);
+                document.getElementById('contactForm').reset();
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }, 1000);
+        });
+    </script>
+</body>
+
+</html>

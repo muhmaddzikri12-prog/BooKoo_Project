@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Produk - TokoKita</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        /* Tambahan CSS khusus untuk Search Bar */
+        
+        .search-box {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .search-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="home.html" class="logo">
+            <i class="fas fa-book-open"></i> BooKoo
+        </a>
+
+        <div class="nav-links" id="navLinks">
+            <a href="home.html">Beranda</a>
+            <a href="products.html">Katalog Buku</a>
+            <a href="bestseller.html">Bestseller</a>
+            <a href="orders.html">Pesanan Saya</a>
+            <a href="contact.html">Hubungi Kami</a>
+        </div>
+
+        <div class="nav-icons">
+            <a href="#" onclick="logout()" class="icon-btn" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+            <a href="cart.html" class="icon-btn">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="nav-cart-count">0</span>
+            </a>
+
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 style="text-align: center; margin-bottom: 1rem">Daftar Produk</h2>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="Cari nama produk..." />
+        </div>
+
+        <div class="product-grid" id="all-products"></div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        checkAuth();
+
+        // Render awal semua produk
+        renderProducts("all-products");
+
+        // Event Listener untuk Pencarian Real-time
+        const searchInput = document.getElementById("searchInput");
+        searchInput.addEventListener("input", function(e) {
+            const keyword = e.target.value;
+            renderProducts("all-products", null, keyword);
+        });
+    </script>
+</body>
+
+</html>
